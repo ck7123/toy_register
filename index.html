@@ -53,7 +53,7 @@ video{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:20px;background
   <div class="card">
     <video id="v" playsinline muted></video>
     <div id="msg">「スタート」をおしてね</div>
-    <button class="btn" id="start">スタート</button>
+    <button class="btn" id="start">スタート</button><button class="btn" id="flip" style="margin-left:8px">インカメラにする</button>
   </div>
   <div class="card">
     <div id="main">
@@ -132,11 +132,11 @@ function sortProducts(){
   PRODUCTS = sorted; saveProducts(); buildSheet();
   document.getElementById("pmsg").textContent = "ばんごうじゅんにならべました";
 }
-var EMOJI = {"りんご":"🍎","バナナ":"🍌","ぎゅうにゅう":"🥛","おにぎり":"🍙","クッキー":"🍪","ジュース":"🧃","みかん":"🍊","いちご":"🍓","パン":"🍞","たまご":"🥚","ケーキ":"🍰","アイス":"🍦"};
+var EMOJI = {"りんご":"🍎","バナナ":"🍌","ぎゅうにゅう":"🥛","おにぎり":"🍙","クッキー":"🍪","ジュース":"🥤","みかん":"🍊","いちご":"🍓","パン":"🍞","たまご":"🥚","ケーキ":"🍰","アイス":"🍦"};
 function emo(n){ return EMOJI[n] || "🎀"; }
 loadProducts();
 
-var items = [], mode = "scan", last = "", lastT = 0, ac = null;
+var items = [], mode = "scan", last = "", lastT = 0, ac = null, reader = null, facing = "environment";
 var $ = function(id){return document.getElementById(id)};
 
 function beep(freq, start, dur, vol){
@@ -215,9 +215,10 @@ $("start").onclick = function(){
     }catch(e){}
   }
   if(typeof ZXing === "undefined"){ $("msg").textContent = "よみとりのぶひんがよみこめません。ネットにつながっているか確認してね"; return; }
-  var reader = new ZXing.BrowserMultiFormatReader();
+  if(reader){ try{ reader.reset(); }catch(e){} }
+  reader = new ZXing.BrowserMultiFormatReader();
   $("msg").textContent = "カメラをじゅんび中…";
-  reader.decodeFromConstraints({video:{facingMode:{ideal:"environment"}}}, "v", function(res){
+  reader.decodeFromConstraints({video:{facingMode:{ideal:facing}}}, "v", function(res){
     if(res) onCode(res.getText());
   }).then(function(){
     $("msg").textContent = "バーコードをカメラにかざしてね";
@@ -266,6 +267,12 @@ function buildSheet(){
 buildSheet();
 $("padd").onclick = addProduct;
 $("psort").onclick = sortProducts;
+$("flip").onclick = function(){
+  facing = facing === "user" ? "environment" : "user";
+  $("v").style.webkitTransform = $("v").style.transform = facing === "user" ? "scaleX(-1)" : "none";
+  $("flip").textContent = facing === "user" ? "アウトカメラにする" : "インカメラにする";
+  if(reader) $("start").onclick();
+};
 </script>
 </body>
 </html>
