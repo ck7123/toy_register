@@ -218,7 +218,10 @@ $("start").onclick = function(){
   }
   if(typeof ZXing === "undefined"){ $("msg").textContent = "よみとりのぶひんがよみこめません。ネットにつながっているか確認してね"; return; }
   if(reader){ try{ reader.reset(); }catch(e){} }
-  reader = new ZXing.BrowserMultiFormatReader();
+  var hints = new Map();
+  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.QR_CODE]);
+  reader = new ZXing.BrowserMultiFormatReader(hints, 300);
   $("msg").textContent = "カメラをじゅんび中…";
   reader.decodeFromConstraints({video:{facingMode:{ideal:facing}}}, "v", function(res){
     if(res) onCode(res.getText());
